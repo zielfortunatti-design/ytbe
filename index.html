@@ -77,7 +77,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .more{position:absolute;top:8px;right:8px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:rgba(14,16,20,.82);color:var(--fg)}
 .more:hover{background:rgba(14,16,20,.96)}
 .more svg{width:18px;height:18px;fill:currentColor}
-.meta .saved-tag{color:var(--accent)}
 
 .btn.small{padding:7px 12px;font-size:.875rem;border-radius:9px}
 .btn.danger{background:var(--danger);color:#2a0e0b}
@@ -102,12 +101,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .fitem .more{top:50%;right:8px;transform:translateY(-50%);background:transparent}
 .fitem .more:hover{background:var(--surface-2)}
 
-.res-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px 18px}
-.res{min-width:0}
-.res-open{display:flex;gap:12px;width:100%;text-align:left;align-items:flex-start}
-.res-open .thumb{flex:none;width:44%;max-width:180px;border-radius:10px}
-.res-open .meta strong{font-size:.95rem}
-.badge.dur{left:auto;right:6px}
 
 .modal{position:fixed;inset:0;z-index:100;background:rgba(6,8,11,.72);display:grid;place-items:end center;overscroll-behavior:contain}
 .sheet{width:min(100%,520px);max-height:92dvh;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:20px max(20px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;color:var(--fg)}
@@ -157,6 +150,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
    compartilhar, cartão de info, marca d'água) caem fora da área mostrada. O vídeo fica inteiro no centro. */
 .frame{--crop:clamp(72px,14cqh,120px);position:absolute;left:50%;top:calc(var(--crop) * -1);transform:translateX(-50%);height:calc(100cqh + var(--crop) * 2);width:min(100cqw,calc(100cqh * 16 / 9))}
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+.player:not(.isfs) #fitBtn{display:none}
+/* Preencher: o vídeo ocupa a largura toda da tela e o excesso de cima e de baixo é cortado. */
+.player.isfs.fill .frame{width:100cqw;height:calc(100cqw * 9 / 16 + var(--crop) * 2);top:calc((100cqh - 100cqw * 9 / 16) / 2 - var(--crop))}
 .shield{position:absolute;inset:0;z-index:2;cursor:pointer;touch-action:manipulation}
 .player.idle .shield{cursor:none}
 
@@ -175,23 +171,23 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .row{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;flex-wrap:wrap}
 .lf,.rt{display:flex;align-items:center;gap:6px;min-width:0}
 .rt{margin-left:auto}
-.ic.sm{width:32px;height:32px}
-.ic.sm svg{width:20px;height:20px}
-.ic{flex:none;width:38px;height:38px;display:grid;place-items:center;border-radius:9px;color:#fff}
+.ic.sm{width:40px;height:40px}
+.ic.sm svg{width:24px;height:24px}
+.ic{flex:none;width:46px;height:46px;display:grid;place-items:center;border-radius:11px;color:#fff}
 .ic:hover{background:rgba(255,255,255,.14)}
-.ic svg{width:22px;height:22px;fill:currentColor}
+.ic svg{width:28px;height:28px;fill:currentColor}
 .ic svg.st{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.time{font-family:var(--mono);font-size:.78rem;color:#e8e8e8;white-space:nowrap;font-variant-numeric:tabular-nums}
-.speed{font-family:var(--mono);font-size:.82rem;min-width:46px;width:auto;padding:0 8px;font-variant-numeric:tabular-nums}
-input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:20px;margin:0;cursor:pointer;min-width:0}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--accent) var(--p,0%),rgba(255,255,255,.28) var(--p,0%))}
-input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba(255,255,255,.28)}
-input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--accent)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;margin-top:-4.5px;border:0}
-input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:0}
+.time{font-family:var(--mono);font-size:.9rem;color:#e8e8e8;white-space:nowrap;font-variant-numeric:tabular-nums}
+.speed{font-family:var(--mono);font-size:.98rem;min-width:56px;width:auto;padding:0 8px;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:28px;margin:0;cursor:pointer;min-width:0}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(to right,var(--accent) var(--p,0%),rgba(255,255,255,.28) var(--p,0%))}
+input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:rgba(255,255,255,.28)}
+input[type=range]::-moz-range-progress{height:5px;border-radius:3px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:#fff;margin-top:-6px;border:0}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:#fff;border:0}
 #scrub{width:100%}
-#vol{width:78px}
-@media (max-width:560px){#vol,#muteBtn{display:none}.time{font-size:.72rem}.ic{width:36px;height:36px}.ic.sm{width:30px;height:30px}.lf,.rt{gap:2px}}
+#vol{width:92px}
+@media (max-width:560px){#vol,#muteBtn{display:none}.time{font-size:.82rem}.ic{width:44px;height:44px}.ic svg{width:26px;height:26px}.ic.sm{width:40px;height:40px}.ic.sm svg{width:24px;height:24px}.lf,.rt{gap:2px}}
 
 .queue{max-width:min(100%,900px);width:100%;margin:0 auto}
 .queue h3{margin:0 0 10px;font-family:var(--mono);font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -217,21 +213,28 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     <header class="top">
       <div class="brand"><i aria-hidden="true"></i>Foco</div>
       <form class="add" id="addForm" autocomplete="off">
-        <input id="link" type="text" inputmode="search" enterkeyhint="search" placeholder="Buscar ou colar um link" aria-label="Buscar vídeos ou colar o link de um vídeo ou de uma playlist">
+        <input id="link" type="text" inputmode="search" enterkeyhint="search" placeholder="Buscar salvos ou colar link" aria-label="Buscar nos itens salvos ou colar o link de um vídeo ou de uma playlist para salvar">
         <button class="btn" type="submit">Buscar</button>
       </form>
     </header>
     <p class="note" id="note" role="status"></p>
     <p class="notice" id="fileNotice" hidden>Esta página foi aberta direto do arquivo, e o YouTube costuma recusar a reprodução assim. Abra por um endereço http, como um servidor local ou uma hospedagem.</p>
 
-    <!-- Resultados da busca -->
+    <!-- Resultados da busca (só nos itens salvos) -->
     <section class="shelf" id="results" hidden>
       <div class="res-head">
         <h2 id="resTitle">Resultados</h2>
         <button class="btn ghost small" id="resClear" type="button">Limpar busca</button>
       </div>
       <p class="note" id="resNote" role="status"></p>
-      <ul class="res-list" id="resList"></ul>
+      <section class="shelf" id="resFoldersWrap" hidden>
+        <h2>Pastas</h2>
+        <ul class="folders" id="resFolders"></ul>
+      </section>
+      <section class="shelf" id="resItemsWrap" hidden>
+        <h2>Vídeos e playlists</h2>
+        <ul class="grid" id="resItems"></ul>
+      </section>
     </section>
 
     <!-- Biblioteca salva -->
@@ -310,6 +313,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
             <button class="ic" id="muteBtn" type="button" aria-label="Silenciar"></button>
             <input id="vol" type="range" min="0" max="100" value="100" step="1" aria-label="Volume">
             <button class="ic speed" id="speedBtn" type="button" aria-label="Velocidade">1×</button>
+            <button class="ic" id="fitBtn" type="button" aria-label="Ampliar o vídeo para preencher a tela"></button>
             <button class="ic" id="fsBtn" type="button" aria-label="Tela cheia"></button>
           </div>
         </div>
@@ -353,7 +357,9 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     rw: '<svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a6 6 0 11-6 6H4a8 8 0 108-8z"/><text x="12" y="16.2" font-size="7" font-weight="700" text-anchor="middle" font-family="sans-serif">10</text></svg>',
     ff: '<svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7a6 6 0 106 6h2a8 8 0 11-8-8z"/><text x="12" y="16.2" font-size="7" font-weight="700" text-anchor="middle" font-family="sans-serif">10</text></svg>',
     fs: '<svg class="st" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
-    fsx: '<svg class="st" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>'
+    fsx: '<svg class="st" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    fill: '<svg class="st" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
+    fit: '<svg class="st" viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>'
   };
 
   /* ---------- Links ---------- */
@@ -412,7 +418,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   }
 
   /* Pastas */
-  let curFolder = null, resultsMode = false, searchSeq = 0;
+  let curFolder = null, resultsMode = false, query = '';
   const byName = (a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base', numeric: true });
   const folderById = id => (id == null ? null : folders.find(f => f.id === id) || null);
   const pidOf = f => (f.parentId != null && folderById(f.parentId) ? f.parentId : null);
@@ -432,7 +438,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     return path;
   }
   const folderName = id => { const f = folderById(id); return f ? f.name : 'Biblioteca'; };
-  function goFolder(id) { curFolder = id; render(); window.scrollTo(0, 0); }
+  function goFolder(id) { if (resultsMode) { resultsMode = false; $('#link').value = ''; } curFolder = id; render(); window.scrollTo(0, 0); }
 
   function progressPct(it) {
     const p = it.pos;
@@ -480,7 +486,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     meta.appendChild(h('strong', '', it.title || 'Carregando título…'));
     if (it.type === 'playlist' && it.pos && it.pos.index > 0) meta.appendChild(h('span', '', 'Parou no vídeo ' + (it.pos.index + 1)));
     else if (it.type === 'video' && inProgress(it)) meta.appendChild(h('span', '', 'Faltam ' + fmt(it.pos.dur - it.pos.time)));
-    if (showFolder && itemFolder(it) != null) meta.appendChild(h('span', '', 'em ' + folderName(itemFolder(it))));
+    if (showFolder && itemFolder(it) != null) meta.appendChild(h('span', '', 'em ' + pathOf(itemFolder(it)).map(f => f.name).join(' › ')));
     open.append(th, meta);
 
     li.append(open, moreBtn('Ações de ' + (it.title || 'item'), () => itemActions(it)));
@@ -504,7 +510,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   function render() {
     $('#browse').hidden = resultsMode;
     $('#results').hidden = !resultsMode;
-    if (resultsMode) return;
+    if (resultsMode) { renderResults(query); return; }
     if (curFolder != null && !folderById(curFolder)) curFolder = null;
     const root = curFolder == null;
 
@@ -533,8 +539,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     $('#empty').hidden = !empty;
     $('#emptyTitle').textContent = root ? 'Nada salvo ainda' : 'Esta pasta está vazia';
     $('#emptyText').textContent = root
-      ? 'Busque um vídeo ou cole o link de um vídeo ou de uma playlist. Só o que você salvar aparece aqui.'
-      : 'Busque ou cole um link acima e escolha esta pasta ao salvar.';
+      ? 'Cole o link de um vídeo ou de uma playlist para salvar. Só o que você salvar aparece aqui.'
+      : 'Cole um link acima e escolha esta pasta ao salvar.';
   }
 
   async function resolveMeta(it) {
@@ -689,7 +695,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
         const it = { id: uid(), type: info.type, ref: info.ref, title: name.value.trim().slice(0, 200), thumb: isPl ? thumb : '', count: info.count || 0, folderId: fid, addedAt: Date.now() };
         items.unshift(it); persist();
         closeModal();
-        $('#link').value = ''; resultsMode = false; searchSeq++;
+        $('#link').value = ''; resultsMode = false;
         render(); resolveMeta(it);
         say('Salvo em “' + folderName(fid) + '”.');
         if (watch) openItem(it);
@@ -766,64 +772,47 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     persistFolders(); render();
   }));
 
-  /* ---------- Busca ---------- */
-  const hasNative = () => !!(window.FocoNative && typeof window.FocoNative.search === 'function');
-  const pendingSearch = {}; let reqN = 0;
-  function nativeSearch(q) {
-    return new Promise((resolve, reject) => {
-      const id = 's' + (++reqN);
-      pendingSearch[id] = { resolve, reject };
-      setTimeout(() => { if (pendingSearch[id]) { delete pendingSearch[id]; reject(new Error('timeout')); } }, 25000);
-      try { window.FocoNative.search(q, id); } catch (e) { delete pendingSearch[id]; reject(e); }
-    });
+  /* ---------- Busca nos itens salvos ---------- */
+  const norm = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const folderPath = id => pathOf(id).map(f => f.name).join(' › ');
+  const looksLikeLink = t => /https?:\/\/|(^|\s)(www\.|m\.)?(youtube\.com|youtu\.be)\b/i.test(t);
+  function searchLibrary(q) {
+    const terms = norm(q).split(/\s+/).filter(Boolean);
+    const hit = hay => terms.every(t => hay.includes(t));
+    return {
+      folders: folders.filter(f => hit(norm(f.name))).sort(byName),
+      items: items.filter(i => hit(norm((i.title || '') + ' ' + folderPath(itemFolder(i))))).sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+    };
   }
-  window.__focoSearch = (id, json) => {
-    const p = pendingSearch[id]; if (!p) return; delete pendingSearch[id];
-    try { const d = JSON.parse(json); if (d.error) p.reject(new Error(d.error)); else p.resolve(d.results || []); }
-    catch (e) { p.reject(e); }
-  };
-  const searchError = e => ({
-    nonative: 'A busca de vídeos funciona no app Android. Aqui, cole o link do vídeo ou da playlist.',
-    network: 'Não foi possível buscar agora. Verifique a conexão e tente de novo.',
-    timeout: 'A busca demorou demais. Tente de novo.',
-    parse: 'Não consegui ler os resultados do YouTube agora. Cole o link do vídeo para salvar.',
-    empty: 'Digite o que quer buscar.'
-  })[e && e.message] || 'Não foi possível buscar agora. Tente de novo.';
-
-  function buildResult(r) {
-    const li = h('li', 'res');
-    const b = h('button', 'res-open'); b.type = 'button';
-    b.addEventListener('click', () => openSaveDialog({ type: 'video', ref: r.id, title: r.title, thumb: ytThumb(r.id) }));
-    const th = h('div', 'thumb'); const img = h('img'); img.src = ytThumb(r.id); img.alt = ''; img.loading = 'lazy'; th.appendChild(img);
-    if (r.duration) th.appendChild(h('span', 'badge dur', r.duration));
-    const meta = h('div', 'meta'); meta.appendChild(h('strong', '', r.title));
-    const l2 = [r.channel, r.views, r.published].filter(Boolean).join(' · ');
-    if (l2) meta.appendChild(h('span', '', l2));
-    if (items.some(x => x.type === 'video' && x.ref === r.id)) meta.appendChild(h('span', 'saved-tag', 'Já está na biblioteca'));
-    b.append(th, meta); li.appendChild(b);
-    return li;
-  }
-  async function runSearch(q) {
-    const seq = ++searchSeq;
-    resultsMode = true; render();
+  function renderResults(q) {
     $('#resTitle').textContent = 'Resultados para “' + q + '”';
-    const list = $('#resList'), rn = $('#resNote');
-    list.replaceChildren(); rn.className = 'note'; rn.textContent = 'Buscando…';
-    window.scrollTo(0, 0);
-    try {
-      if (!hasNative()) throw new Error('nonative');
-      const res = await nativeSearch(q);
-      if (seq !== searchSeq) return;
-      list.replaceChildren(...res.map(buildResult));
-      rn.textContent = res.length ? '' : 'Nada encontrado para “' + q + '”.';
-    } catch (e) {
-      if (seq !== searchSeq) return;
-      rn.classList.add('err'); rn.textContent = searchError(e);
-    }
+    const r = searchLibrary(q);
+    fillList($('#resFolders'), r.folders, buildFolder);
+    fillList($('#resItems'), r.items, it => buildCard(it, true));
+    $('#resFoldersWrap').hidden = !r.folders.length;
+    $('#resItemsWrap').hidden = !r.items.length;
+    const rn = $('#resNote');
+    rn.textContent = r.folders.length + r.items.length ? '' : 'Nada encontrado para “' + q + '” entre os itens salvos.';
   }
-  function exitResults() { resultsMode = false; searchSeq++; $('#link').value = ''; render(); }
+  function exitResults() { resultsMode = false; $('#link').value = ''; render(); }
   $('#resClear').addEventListener('click', exitResults);
 
+  /* Filtra enquanto digita; link colado vira a janela de salvar. */
+  let inTimer;
+  $('#link').addEventListener('input', () => {
+    clearTimeout(inTimer);
+    inTimer = setTimeout(() => {
+      const v = $('#link').value.trim();
+      if (!v || looksLikeLink(v)) { if (resultsMode) { resultsMode = false; render(); } return; }
+      query = v; resultsMode = true; render();
+    }, 120);
+  });
+  $('#link').addEventListener('paste', () => {
+    setTimeout(() => {
+      const v = $('#link').value.trim(), m = v.match(/https?:\/\/\S+/), p = parseLink(m ? m[0] : v);
+      if (p && !modalOpen()) { $('#link').blur(); openSaveDialog({ type: p.type, ref: p.ref }); }
+    }, 0);
+  });
   $('#addForm').addEventListener('submit', e => {
     e.preventDefault();
     const raw = $('#link').value.trim();
@@ -832,8 +821,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     const m = raw.match(/https?:\/\/\S+/);
     const p = parseLink(m ? m[0] : raw);
     if (p) { openSaveDialog({ type: p.type, ref: p.ref }); return; }
-    if (m || /^(www\.|m\.)?(youtube\.com|youtu\.be)\b/i.test(raw)) { say('Não reconheci esse link. Use um link de vídeo ou de playlist do YouTube.', true); return; }
-    runSearch(raw);
+    if (m || looksLikeLink(raw)) { say('Não reconheci esse link. Use um link de vídeo ou de playlist do YouTube.', true); return; }
+    query = raw; resultsMode = true; render();
   });
 
   /* ---------- Exportar / importar ---------- */
@@ -875,6 +864,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   let pendingOpen = null; const readyQ = [];
   const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
   let speedIdx = 1;
+  let autoFs = false, fillMode = read('foco.fill.v1', false) === true;
   const box = $('#player');
 
   const fmt = s => {
@@ -925,6 +915,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     cur = it; ended = false; endHandled = false; listIds = [];
     $('#library').hidden = true; $('#theater').hidden = false;
     $('#now').textContent = it.title || '';
+    autoFs = true; enterFs();   // abre direto em tela cheia (dentro do toque do usuário)
     $('#queue').hidden = it.type !== 'playlist';
     $('#queueList').replaceChildren();
     $('#prevBtn').hidden = $('#nextBtn').hidden = it.type !== 'playlist';
@@ -979,8 +970,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     if (ready) { try { player.stopVideo(); } catch {} }
     pendingOpen = null; cur = null;
     clearTimeout(loadTimer); clearTimeout(readyTimer);
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    box.classList.remove('pseudo');
+    autoFs = false; exitFs();
     $('#theater').hidden = true; $('#library').hidden = false;
     render();
   }
@@ -1185,23 +1175,43 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   });
 
   /* Tela cheia sempre no nosso contêiner, nunca no iframe do YouTube. */
-  function toggleFs() {
-    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-    if (fsEl || box.classList.contains('pseudo')) {
-      box.classList.remove('pseudo');
-      if (fsEl) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-    } else if (box.requestFullscreen || box.webkitRequestFullscreen) {
-      const p = (box.requestFullscreen || box.webkitRequestFullscreen).call(box);
-      if (p && p.catch) p.catch(() => box.classList.add('pseudo'));
-    } else box.classList.add('pseudo');
-    setTimeout(syncFs, 150);
-  }
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement || box.classList.contains('pseudo'));
   function syncFs() {
-    const on = document.fullscreenElement || document.webkitFullscreenElement || box.classList.contains('pseudo');
+    const on = isFs();
     $('#fsBtn').innerHTML = on ? IC.fsx : IC.fs;
+    $('#fsBtn').setAttribute('aria-label', on ? 'Sair da tela cheia' : 'Tela cheia');
+    box.classList.toggle('isfs', on);
   }
+  function enterFs() {
+    if (!isFs()) {
+      const req = box.requestFullscreen || box.webkitRequestFullscreen;
+      if (req) {
+        try { const p = req.call(box); if (p && p.catch) p.catch(() => { box.classList.add('pseudo'); syncFs(); }); }
+        catch { box.classList.add('pseudo'); }
+      } else box.classList.add('pseudo');
+    }
+    syncFs(); setTimeout(syncFs, 150);
+  }
+  function exitFs() {
+    box.classList.remove('pseudo');
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      try { const p = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (p && p.catch) p.catch(() => {}); } catch {}
+    }
+    syncFs(); setTimeout(syncFs, 150);
+  }
+  function toggleFs() { autoFs = false; if (isFs()) exitFs(); else enterFs(); }
   $('#fsBtn').addEventListener('click', toggleFs);
   document.addEventListener('fullscreenchange', syncFs);
+  document.addEventListener('webkitfullscreenchange', syncFs);
+
+  /* Preencher: amplia o vídeo até cobrir a largura da tela (corta um pouco o topo e a base). */
+  function paintFit() {
+    const b = $('#fitBtn');
+    b.innerHTML = fillMode ? IC.fit : IC.fill;
+    b.setAttribute('aria-label', fillMode ? 'Ajustar o vídeo à tela' : 'Ampliar o vídeo para preencher a tela');
+    box.classList.toggle('fill', fillMode);
+  }
+  $('#fitBtn').addEventListener('click', () => { fillMode = !fillMode; write('foco.fill.v1', fillMode); paintFit(); wake(); });
 
   /* Escudo: a única coisa que o toque alcança é o nosso contêiner, nunca o iframe. */
   let idleTimer;
@@ -1251,7 +1261,10 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   /* Ganchos para o app Android (botão Voltar e salvar ao sair). */
   window.__focoBack = () => {
     if (modalOpen()) { closeModal(); return true; }
-    if (!$('#theater').hidden) { closeTheater(); return true; }
+    if (!$('#theater').hidden) {
+      if (isFs() && !autoFs) { exitFs(); return true; }   // saiu da tela cheia que o usuário ligou
+      closeTheater(); return true;                        // tela cheia aberta pela miniatura: volta à biblioteca
+    }
     if (resultsMode) { exitResults(); return true; }
     if (curFolder != null) { const f = folderById(curFolder); goFolder(f ? pidOf(f) : null); return true; }
     return false;
@@ -1261,7 +1274,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 
   /* ---------- Início ---------- */
   if (location.protocol === 'file:') $('#fileNotice').hidden = false;
-  paintRange($('#vol')); paintRange($('#scrub'));
+  paintRange($('#vol')); paintRange($('#scrub')); paintFit(); syncFs();
   render();
   items.forEach(resolveMeta);
   loadApi();
