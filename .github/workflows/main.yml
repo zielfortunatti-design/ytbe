@@ -1,0 +1,41 @@
+name: Gerar APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Montar projeto Android
+        run: |
+          mkdir -p proj/app/src/main/java/app/foco proj/app/src/main/assets proj/app/src/main/res/values proj/app/src/main/res/drawable
+          cp build.gradle settings.gradle gradle.properties proj/
+          cp app-build.gradle proj/app/build.gradle
+          cp AndroidManifest.xml proj/app/src/main/
+          cp MainActivity.java proj/app/src/main/java/app/foco/
+          cp index.html proj/app/src/main/assets/
+          cp styles.xml proj/app/src/main/res/values/
+          cp ic_launcher.xml proj/app/src/main/res/drawable/
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Compilar APK
+        run: gradle assembleDebug --no-daemon
+        working-directory: proj
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: foco-apk
+          path: proj/app/build/outputs/apk/debug/app-debug.apk
