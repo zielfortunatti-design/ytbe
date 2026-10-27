@@ -58,6 +58,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 .grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:22px 18px}
 .item{position:relative;min-width:0}
+.shelf{display:flex;flex-direction:column;gap:12px;min-width:0}
+.shelf h2{margin:0;font-family:var(--display);font-weight:500;font-size:1.15rem;letter-spacing:-.01em}
+.row-scroll{list-style:none;margin:0;padding:0 0 12px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.row-scroll .item{flex:0 0 min(260px,74vw);scroll-snap-align:start}
 .open{display:flex;flex-direction:column;gap:10px;width:100%;text-align:left}
 .thumb{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--surface-2);max-width:100%}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease,filter .35s ease;filter:brightness(.88)}
@@ -94,9 +98,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
    compartilhar, cartão de info, marca d'água) caem fora da área mostrada. O vídeo fica inteiro no centro. */
 .frame{--crop:clamp(72px,14cqh,120px);position:absolute;left:50%;top:calc(var(--crop) * -1);transform:translateX(-50%);height:calc(100cqh + var(--crop) * 2);width:min(100cqw,calc(100cqh * 16 / 9))}
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
-.tail{position:absolute;inset:0;z-index:3;background:#000;display:grid;place-items:center;text-align:center;pointer-events:none}
-.tail p{margin:0;font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.tail strong{display:block;margin-top:6px;font-family:var(--display);font-weight:500;font-size:clamp(1.4rem,4vw,2.2rem);letter-spacing:0;text-transform:none;color:var(--fg);font-variant-numeric:tabular-nums}
 .shield{position:absolute;inset:0;z-index:2;cursor:pointer;touch-action:manipulation}
 .player.idle .shield{cursor:none}
 
@@ -159,16 +160,25 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     <p class="note" id="note" role="status"></p>
     <p class="notice" id="fileNotice" hidden>Esta página foi aberta direto do arquivo, e o YouTube costuma recusar a reprodução assim. Abra por um endereço http, como um servidor local ou uma hospedagem.</p>
 
-    <ul class="grid" id="grid"></ul>
+    <section class="shelf" id="shelfRecent" hidden>
+      <h2>Adicionados recentemente</h2>
+      <ul class="row-scroll" id="rowRecent"></ul>
+    </section>
+    <section class="shelf" id="shelfContinue" hidden>
+      <h2>Continuar assistindo</h2>
+      <ul class="row-scroll" id="rowContinue"></ul>
+    </section>
+    <section class="shelf" id="shelfAll" hidden>
+      <h2>Mais antigos</h2>
+      <ul class="grid" id="grid"></ul>
+    </section>
     <div class="empty" id="empty" hidden>
       <h2>Nada salvo ainda</h2>
       <p>Cole acima o link de um vídeo ou de uma playlist. Só o que você salvar aparece aqui.</p>
     </div>
 
     <footer class="foot">
-      <span>Salvo neste navegador.</span>
-      <button type="button" id="tailBtn"></button>
-      <button type="button" id="exportBtn">Exportar</button>
+      <span>Salvo neste navegador.</span>      <button type="button" id="exportBtn">Exportar</button>
       <button type="button" id="importBtn">Importar</button>
       <input type="file" id="importFile" accept="application/json" hidden>
     </footer>
@@ -183,7 +193,6 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 
     <div class="player idle" id="player">
       <div class="frame"><div id="yt"></div></div>
-      <div class="tail" id="tail" hidden><div><p>Final do vídeo</p><strong id="tailTime">0:00</strong></div></div>
       <div class="shield" id="shield"></div>
 
       <div class="cover" id="cover" data-mode="loading" hidden>
@@ -298,60 +307,83 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     return p && p.dur > 0 ? Math.min(100, Math.max(0, (p.time / p.dur) * 100)) : 0;
   }
 
-  function render() {
-    grid.replaceChildren();
-    $('#empty').hidden = items.length > 0;
-    for (const it of items) {
-      const li = document.createElement('li');
-      li.className = 'item';
+  const RECENT_N = 12;
+  const inProgress = it => {
+    const p = it.pos;
+    if (!p) return false;
+    if (it.type === 'playlist') return (p.index || 0) > 0 || (p.time || 0) > 5;
+    return p.time > 5 && p.dur > 0 && p.time < p.dur - 6;
+  };
 
-      const open = document.createElement('button');
-      open.type = 'button'; open.className = 'open';
-      open.addEventListener('click', () => openItem(it));
+  function buildCard(it) {
+    const li = document.createElement('li');
+    li.className = 'item';
 
-      const th = document.createElement('div'); th.className = 'thumb';
-      const src = it.thumb || (it.type === 'video' ? ytThumb(it.ref) : '');
-      if (src) {
-        const img = document.createElement('img'); img.src = src; img.alt = ''; img.loading = 'lazy';
-        img.addEventListener('error', () => img.remove());
-        th.appendChild(img);
-      } else {
-        const ph = document.createElement('div'); ph.className = 'ph'; th.appendChild(ph);
-      }
-      const badge = document.createElement('span'); badge.className = 'badge';
-      badge.textContent = it.type === 'playlist' ? 'Playlist' + (it.count ? ' · ' + it.count : '') : 'Vídeo';
-      th.appendChild(badge);
-      const pct = progressPct(it);
-      if (pct > 1 && it.type === 'video') {
-        const bar = document.createElement('div'); bar.className = 'bar';
-        const b = document.createElement('b'); b.style.width = pct + '%';
-        bar.appendChild(b); th.appendChild(bar);
-      }
+    const open = document.createElement('button');
+    open.type = 'button'; open.className = 'open';
+    open.addEventListener('click', () => openItem(it));
 
-      const meta = document.createElement('div'); meta.className = 'meta';
-      const t = document.createElement('strong'); t.textContent = it.title || 'Carregando título…';
-      meta.appendChild(t);
-      if (it.type === 'playlist' && it.pos && it.pos.index > 0) {
-        const s = document.createElement('span'); s.textContent = 'Parou no vídeo ' + (it.pos.index + 1); meta.appendChild(s);
-      }
-      open.append(th, meta);
-
-      const del = document.createElement('button');
-      del.type = 'button'; del.className = 'del'; del.textContent = 'Remover';
-      del.setAttribute('aria-label', 'Remover ' + (it.title || 'item') + ' da biblioteca');
-      let armTimer;
-      del.addEventListener('click', e => {
-        e.stopPropagation();
-        if (del.classList.contains('armed')) {
-          items = items.filter(x => x.id !== it.id); persist(); render();
-        } else {
-          del.classList.add('armed'); del.textContent = 'Confirmar?';
-          armTimer = setTimeout(() => { del.classList.remove('armed'); del.textContent = 'Remover'; }, 3000);
-        }
-      });
-      li.append(open, del);
-      grid.appendChild(li);
+    const th = document.createElement('div'); th.className = 'thumb';
+    const src = it.thumb || (it.type === 'video' ? ytThumb(it.ref) : '');
+    if (src) {
+      const img = document.createElement('img'); img.src = src; img.alt = ''; img.loading = 'lazy';
+      img.addEventListener('error', () => img.remove());
+      th.appendChild(img);
+    } else {
+      const ph = document.createElement('div'); ph.className = 'ph'; th.appendChild(ph);
     }
+    const badge = document.createElement('span'); badge.className = 'badge';
+    badge.textContent = it.type === 'playlist' ? 'Playlist' + (it.count ? ' · ' + it.count : '') : 'Vídeo';
+    th.appendChild(badge);
+    const pct = progressPct(it);
+    if (pct > 1 && it.type === 'video') {
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const b = document.createElement('b'); b.style.width = pct + '%';
+      bar.appendChild(b); th.appendChild(bar);
+    }
+
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const t = document.createElement('strong'); t.textContent = it.title || 'Carregando título…';
+    meta.appendChild(t);
+    if (it.type === 'playlist' && it.pos && it.pos.index > 0) {
+      const s = document.createElement('span'); s.textContent = 'Parou no vídeo ' + (it.pos.index + 1); meta.appendChild(s);
+    } else if (it.type === 'video' && inProgress(it)) {
+      const s = document.createElement('span'); s.textContent = 'Faltam ' + fmt(it.pos.dur - it.pos.time); meta.appendChild(s);
+    }
+    open.append(th, meta);
+
+    const del = document.createElement('button');
+    del.type = 'button'; del.className = 'del'; del.textContent = 'Remover';
+    del.setAttribute('aria-label', 'Remover ' + (it.title || 'item') + ' da biblioteca');
+    del.addEventListener('click', e => {
+      e.stopPropagation();
+      if (del.classList.contains('armed')) {
+        items = items.filter(x => x.id !== it.id); persist(); render();
+      } else {
+        del.classList.add('armed'); del.textContent = 'Confirmar?';
+        setTimeout(() => { del.classList.remove('armed'); del.textContent = 'Remover'; }, 3000);
+      }
+    });
+    li.append(open, del);
+    return li;
+  }
+
+  function fill(list, arr) {
+    list.replaceChildren();
+    arr.forEach(it => list.appendChild(buildCard(it)));
+  }
+
+  function render() {
+    const byNew = [...items].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+    const recent = byNew.slice(0, RECENT_N), older = byNew.slice(RECENT_N);
+    const cont = items.filter(inProgress).sort((a, b) => (b.last || b.addedAt || 0) - (a.last || a.addedAt || 0));
+    fill($('#rowRecent'), recent);
+    fill($('#rowContinue'), cont);
+    fill(grid, older);
+    $('#shelfRecent').hidden = !recent.length;
+    $('#shelfContinue').hidden = !cont.length;
+    $('#shelfAll').hidden = !older.length;
+    $('#empty').hidden = items.length > 0;
   }
 
   async function resolveMeta(it) {
@@ -407,11 +439,6 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   let player = null, ready = false, apiReady = false, cur = null;
   let ended = false, endHandled = false, listIds = [], scrubbing = false, tickN = 0;
   let pendingOpen = null; const readyQ = [];
-  const TAIL_SECS = 20, TAIL_MIN = 45;
-  let tailEnabled = read('foco.tail.v1', true) !== false;
-  const paintTailBtn = () => { $('#tailBtn').textContent = 'Ocultar imagem nos últimos 20 s: ' + (tailEnabled ? 'ligado' : 'desligado'); };
-  $('#tailBtn').addEventListener('click', () => { tailEnabled = !tailEnabled; write('foco.tail.v1', tailEnabled); paintTailBtn(); });
-  paintTailBtn();
   const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
   let speedIdx = 1;
   const box = $('#player');
@@ -518,7 +545,6 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     if (ready) { try { player.stopVideo(); } catch {} }
     pendingOpen = null; cur = null;
     clearTimeout(loadTimer); clearTimeout(readyTimer);
-    $('#tail').hidden = true;
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     box.classList.remove('pseudo');
     $('#theater').hidden = true; $('#library').hidden = false;
@@ -531,6 +557,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     try {
       const t = player.getCurrentTime() || 0, d = player.getDuration() || 0;
       cur.pos = ended ? { index: 0, time: 0, dur: d } : { index: cur.type === 'playlist' ? (player.getPlaylistIndex() || 0) : 0, time: t, dur: d };
+      if (!ended && t > 0) cur.last = Date.now();
       persist();
     } catch {}
   }
@@ -652,14 +679,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
       $('#time').textContent = fmt(t) + ' / ' + fmt(d);
       const sc = $('#scrub'); sc.value = d ? Math.round((t / d) * 1000) : 0; paintRange(sc);
     }
-    if (endHandled && d - t > 1.5) endHandled = false;
-    /* Nos últimos segundos o YouTube desenha os cartões de fim de vídeo sobre a imagem.
-       Esconde a imagem (o som continua) até o vídeo acabar. */
-    const rem = d - t;
-    const tailOn = tailEnabled && st === 1 && d > TAIL_MIN && rem <= TAIL_SECS && rem > 0;
-    $('#tail').hidden = !tailOn;
-    if (tailOn) $('#tailTime').textContent = fmt(Math.ceil(rem));
-    /* Corta pouco antes do fim para que a tela final de recomendações nunca apareça. */
+    if (endHandled && d - t > 1.5) endHandled = false;    /* Corta pouco antes do fim para que a tela final de recomendações nunca apareça. */
     if (st === 1 && d > 5 && d - t < 0.45 && !endHandled) {
       endHandled = true;
       let idx = 0; try { idx = player.getPlaylistIndex(); } catch {}
