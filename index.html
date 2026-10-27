@@ -87,10 +87,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .back{flex:none;display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:10px;padding:9px 14px;font-weight:500}
 .back:hover{background:#262b36}
 .now{margin:0;font-family:var(--display);font-weight:500;font-size:1.15rem;line-height:1.3;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player{position:relative;margin:0 auto;width:min(100%,calc((100dvh - 190px) * 16 / 9));background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;max-width:100%;user-select:none;-webkit-user-select:none}
+.player{container-type:size;position:relative;margin:0 auto;width:min(100%,calc((100dvh - 190px) * 16 / 9));background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;max-width:100%;user-select:none;-webkit-user-select:none}
 .player:fullscreen,.player.pseudo{width:100%;height:100%;max-width:none;border-radius:0;aspect-ratio:auto}
 .player.pseudo{position:fixed;inset:0;z-index:50}
-.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+/* O iframe é mais alto que a janela visível: as faixas de cima e de baixo (título, canal, "assistir depois",
+   compartilhar, cartão de info, marca d'água) caem fora da área mostrada. O vídeo fica inteiro no centro. */
+.frame{--crop:clamp(72px,14cqh,120px);position:absolute;left:50%;top:calc(var(--crop) * -1);transform:translateX(-50%);height:calc(100cqh + var(--crop) * 2);width:min(100cqw,calc(100cqh * 16 / 9))}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+.tail{position:absolute;inset:0;z-index:3;background:#000;display:grid;place-items:center;text-align:center;pointer-events:none}
+.tail p{margin:0;font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tail strong{display:block;margin-top:6px;font-family:var(--display);font-weight:500;font-size:clamp(1.4rem,4vw,2.2rem);letter-spacing:0;text-transform:none;color:var(--fg);font-variant-numeric:tabular-nums}
 .shield{position:absolute;inset:0;z-index:2;cursor:pointer;touch-action:manipulation}
 .player.idle .shield{cursor:none}
 
@@ -161,6 +167,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 
     <footer class="foot">
       <span>Salvo neste navegador.</span>
+      <button type="button" id="tailBtn"></button>
       <button type="button" id="exportBtn">Exportar</button>
       <button type="button" id="importBtn">Importar</button>
       <input type="file" id="importFile" accept="application/json" hidden>
@@ -175,7 +182,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     </div>
 
     <div class="player idle" id="player">
-      <div id="yt"></div>
+      <div class="frame"><div id="yt"></div></div>
+      <div class="tail" id="tail" hidden><div><p>Final do vídeo</p><strong id="tailTime">0:00</strong></div></div>
       <div class="shield" id="shield"></div>
 
       <div class="cover" id="cover" data-mode="loading" hidden>
@@ -399,6 +407,11 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   let player = null, ready = false, apiReady = false, cur = null;
   let ended = false, endHandled = false, listIds = [], scrubbing = false, tickN = 0;
   let pendingOpen = null; const readyQ = [];
+  const TAIL_SECS = 20, TAIL_MIN = 45;
+  let tailEnabled = read('foco.tail.v1', true) !== false;
+  const paintTailBtn = () => { $('#tailBtn').textContent = 'Ocultar imagem nos últimos 20 s: ' + (tailEnabled ? 'ligado' : 'desligado'); };
+  $('#tailBtn').addEventListener('click', () => { tailEnabled = !tailEnabled; write('foco.tail.v1', tailEnabled); paintTailBtn(); });
+  paintTailBtn();
   const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
   let speedIdx = 1;
   const box = $('#player');
@@ -505,6 +518,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
     if (ready) { try { player.stopVideo(); } catch {} }
     pendingOpen = null; cur = null;
     clearTimeout(loadTimer); clearTimeout(readyTimer);
+    $('#tail').hidden = true;
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     box.classList.remove('pseudo');
     $('#theater').hidden = true; $('#library').hidden = false;
@@ -639,6 +653,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
       const sc = $('#scrub'); sc.value = d ? Math.round((t / d) * 1000) : 0; paintRange(sc);
     }
     if (endHandled && d - t > 1.5) endHandled = false;
+    /* Nos últimos segundos o YouTube desenha os cartões de fim de vídeo sobre a imagem.
+       Esconde a imagem (o som continua) até o vídeo acabar. */
+    const rem = d - t;
+    const tailOn = tailEnabled && st === 1 && d > TAIL_MIN && rem <= TAIL_SECS && rem > 0;
+    $('#tail').hidden = !tailOn;
+    if (tailOn) $('#tailTime').textContent = fmt(Math.ceil(rem));
     /* Corta pouco antes do fim para que a tela final de recomendações nunca apareça. */
     if (st === 1 && d > 5 && d - t < 0.45 && !endHandled) {
       endHandled = true;
